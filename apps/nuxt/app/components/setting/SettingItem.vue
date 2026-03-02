@@ -1,13 +1,13 @@
 <script setup lang="ts">
 defineProps<{
-  mainTitle?: string,
-  title?: string,
-  desc?: string,
+  mainTitle?: string
+  title?: string
+  desc?: string
 }>()
 </script>
 
 <template>
-  <div class="setting-item" :class="{'has-desc': !!desc}" v-bind="$attrs">
+  <div class="setting-item" v-bind="$attrs">
     <div class="setting-item__main">
       <div class="setting-item__label">
         <span v-if="mainTitle" class="setting-item__main-title">{{ mainTitle }}</span>
@@ -121,5 +121,4 @@ defineProps<{
     font-size: 0.8rem;
   }
 }
-
 </style>

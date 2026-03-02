@@ -210,7 +210,6 @@ export function _getStudyProgress(index: number, total: number) {
   return Number(((index / total) * 100).toFixed())
 }
 
-//todo 偶尔发现一个报错，这里nextTick一直不执行
 export function _nextTick(cb: () => void, time?: number) {
   if (time) {
     nextTick(() => setTimeout(cb, time))

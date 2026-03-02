@@ -7,8 +7,8 @@ import BaseIcon from '@/components/BaseIcon.vue'
 import BasePage from '@/components/BasePage.vue'
 import Book from '@/components/Book.vue'
 import DeleteIcon from '@/components/icon/DeleteIcon.vue'
-import PopConfirm from '@/components/PopConfirm.vue'
-import { APP_NAME, AppEnv, DICT_LIST, LIB_JS_URL, Origin, TourConfig } from '@/config/env.ts'
+import PopConfirm from '~/components/base/PopConfirm.vue'
+import { APP_NAME, AppEnv, DICT_LIST, LIB_JS_URL, Old_Host, Origin, TourConfig } from '@/config/env.ts'
 import { useBaseStore } from '@/stores/base.ts'
 import { useRuntimeStore } from '@/stores/runtime.ts'
 import { useSettingStore } from '@/stores/setting.ts'
@@ -212,7 +212,7 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
 
 let isOldHost = $ref(false)
 onMounted(() => {
-  isOldHost = window.location.host === '2study.top'
+  isOldHost = window.location.host === Old_Host
 })
 </script>
 

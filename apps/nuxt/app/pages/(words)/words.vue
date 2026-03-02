@@ -18,7 +18,7 @@ import { watch } from 'vue'
 import { getCurrentStudyWord } from '@/hooks/dict.ts'
 import { useRuntimeStore } from '@/stores/runtime.ts'
 import Book from '@/components/Book.vue'
-import PopConfirm from '@/components/PopConfirm.vue'
+import PopConfirm from '~/components/base/PopConfirm.vue'
 import Progress from '@/components/base/Progress.vue'
 import Toast from '@/components/base/toast/Toast.ts'
 import BaseButton from '@/components/BaseButton.vue'
@@ -33,6 +33,7 @@ import {
   AppEnv,
   DICT_LIST,
   LIB_JS_URL,
+  Old_Host,
   Origin,
   TourConfig,
   WordPracticeModeNameMap,
@@ -300,7 +301,7 @@ const systemPracticeText = $computed(() => {
 
 let isOldHost = $ref(false)
 onMounted(() => {
-  isOldHost = window.location.host === '2study.top'
+  isOldHost = window.location.host === Old_Host
 })
 </script>
 
@@ -361,6 +362,10 @@ onMounted(() => {
                 </div>
               </BaseButton>
             </PopConfirm>
+
+            <BaseButton type="info" size="small" @click="router.push('/fsrs')">
+              学习记录
+            </BaseButton>
           </div>
         </template>
 

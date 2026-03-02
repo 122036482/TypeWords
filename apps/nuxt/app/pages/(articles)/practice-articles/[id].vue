@@ -205,11 +205,11 @@ function setArticle(val: Article) {
   allWrongWords = new Set()
   articleData.list[store.sbook.lastLearnIndex] = val
   articleData.article = val
-  let ignoreList = [store.allIgnoreWords, store.knownWords][settingStore.ignoreSimpleWord ? 0 : 1]
+  let ignoreSet = [store.allIgnoreWordsSet, store.knownWordsSet][settingStore.ignoreSimpleWord ? 0 : 1]
   articleData.article.sections.map((v, i) => {
     v.map(w => {
       w.words.map(s => {
-        if (!ignoreList.includes(s.word.toLowerCase()) && s.type === PracticeArticleWordType.Word) {
+        if (!ignoreSet.has(s.word.toLowerCase()) && s.type === PracticeArticleWordType.Word) {
           statStore.total++
         }
       })

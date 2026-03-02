@@ -30,7 +30,7 @@ export function useWordOptions() {
   }
 
   function isWordSimple(val: Word) {
-    return !!store.knownWords.includes(val.word.toLowerCase())
+    return !!store.knownWordsSet.has(val.word.toLowerCase())
   }
 
   function toggleWordSimple(val: Word) {
@@ -109,7 +109,6 @@ export function getCurrentStudyWord(): TaskWords {
     const settingStore = useSettingStore()
     //忽略列表：简单词或已掌握
     let ignoreSet = [store.allIgnoreWordsSet, store.knownWordsSet][settingStore.ignoreSimpleWord ? 0 : 1]
-
     const perDay = dict.perDayStudyNumber
     let start = dict.lastLearnIndex
     let end = start

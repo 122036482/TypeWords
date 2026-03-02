@@ -5,7 +5,16 @@ import { getShortcutKey, useEventListener } from '@/hooks/event'
 import { checkAndUpgradeSaveDict, checkAndUpgradeSaveSetting, cloneDeep, loadJsLib, sleep } from '@/utils'
 import BaseButton from '@/components/BaseButton.vue'
 import { getDefaultBaseState, useBaseStore } from '@/stores/base'
-import { APP_NAME, APP_VERSION, DefaultShortcutKeyMap, IS_DEV, LIB_JS_URL, LOCAL_FILE_KEY, Origin } from '@/config/env'
+import {
+  APP_NAME,
+  APP_VERSION,
+  DefaultShortcutKeyMap,
+  IS_DEV,
+  LIB_JS_URL,
+  LOCAL_FILE_KEY,
+  Old_Host,
+  Origin,
+} from '@/config/env'
 import BasePage from '@/components/BasePage.vue'
 import Toast from '@/components/base/toast/Toast'
 import { set } from 'idb-keyval'
@@ -24,7 +33,6 @@ import {
   setPracticeWordCache,
 } from '@/utils/cache'
 import SettingItem from '~/components/setting/SettingItem.vue'
-import Switch from '~/components/base/Switch.vue'
 import Form, { type FormType } from '~/components/base/form/Form.vue'
 import { SUPABASE_KEY, SUPABASE_URL } from '~/utils/supabase.ts'
 
@@ -306,11 +314,12 @@ async function importData(e) {
   importLoading = false
 }
 
-//todo
 let isNewHost = $ref(false)
-// let isNewHost = $ref(window.location.host === Host)
-
 let showTransfer = $ref(false)
+
+onMounted(() => {
+  isNewHost = window.location.host !== Old_Host
+})
 
 function transferOk() {
   setTimeout(() => {
@@ -340,8 +349,7 @@ let sbFormRules = {
 function saveSbConfig() {
   sbFormRef?.validate(async valid => {
     if (valid) {
-      localStorage.setItem(SUPABASE_URL, sbForm?.url)
-      localStorage.setItem(SUPABASE_KEY, sbForm?.key)
+      Supabase.saveConfig(sbForm?.url, sbForm?.key)
 
       // 重新初始化 Supabase 实例
       Supabase.instance = null
@@ -349,46 +357,13 @@ function saveSbConfig() {
 
       try {
         // 检测 data 表是否存在
-        const { error: checkError } = await supabase.from('data').select('id').limit(1)
+        const { error: checkError } = await supabase.from('typewords_data').select('id').limit(1)
 
         if (checkError) {
-          // 表不存在，需要创建
-          Toast.info('正在创建数据表...')
-
-          // 通过 REST API 执行 SQL 创建表
-          const response = await fetch(`${sbForm?.url}/rest/v1/rpc/sql`, {
-            method: 'POST',
-            headers: {
-              apikey: sbForm?.key,
-              Authorization: `Bearer ${sbForm?.key}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              query: `
-                CREATE TABLE IF NOT EXISTS data (
-                  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-                  data JSONB,
-                  type TEXT UNIQUE NOT NULL,
-                  updated_time TIMESTAMPTZ DEFAULT now()
-                );
-                
-                INSERT INTO data (type, data) VALUES 
-                  ('word', '{}'),
-                  ('setting', '{}'),
-                  ('cache', '{}')
-                ON CONFLICT (type) DO NOTHING;
-              `,
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error('创建表失败，请确保 Supabase Key 有足够的权限')
-          }
-
-          Toast.success('数据表创建成功')
+          Toast.error('表不存在')
         } else {
           // 表已存在，检测是否需要插入默认数据
-          const { data: existingData } = await supabase.from('data').select('type')
+          const { data: existingData } = await supabase.from('typewords_data').select('type')
           const existingTypes = existingData?.map(d => d.type) || []
 
           const defaultData = [
@@ -403,26 +378,26 @@ function saveSbConfig() {
             }
           }
         }
-
         Toast.success('保存成功')
       } catch (error) {
-        console.error('初始化 Supabase 表失败:', error)
         Toast.error('保存成功，但初始化数据表失败: ' + error.message)
       }
-
+      // setTimeout(() => {
+      //   location.href = '/words'
+      // }, 1000)
+    }
+  })
+}
+function removeSbConfig() {
+  sbFormRef?.validate(async valid => {
+    if (valid) {
+      Supabase.removeConfig()
+      Toast.success('清除成功')
       setTimeout(() => {
         location.href = '/words'
       }, 1000)
     }
   })
-}
-function removeSbConfig() {
-  localStorage.removeItem(SUPABASE_URL)
-  localStorage.removeItem(SUPABASE_KEY)
-  Toast.success('清除成功')
-  setTimeout(() => {
-    location.href = '/words'
-  }, 1000)
 }
 </script>
 
@@ -521,56 +496,58 @@ function removeSbConfig() {
           </div>
 
           <div v-if="tabIndex === 4">
-            <div>
-              {{ $t('data_saved_locally') }}。如果您需要在不同的设备、浏览器上使用 {{ APP_NAME }}，
-              您需要手动进行数据导出和导入
-            </div>
-            <BaseButton :loading="exportLoading" size="large" class="mt-3" @click="exportData()">{{
-              $t('export_data_backup')
-            }}</BaseButton>
-            <div class="text-gray text-sm mt-2">💾 导出的ZIP文件包含所有学习数据，可在其他设备上导入恢复</div>
+            <!--            导出数据-->
+            <SettingItem
+              title="导出数据"
+              :desc="`${$t('data_saved_locally')}。如果您需要在不同的设备、浏览器上使用 ${APP_NAME}，
+              您需要手动进行数据导出和导入`"
+            >
+              <BaseButton :loading="exportLoading" @click="exportData()">{{ $t('export_data_backup') }}</BaseButton>
+            </SettingItem>
+            <div class="text-gray text-sm">💾 导出的ZIP文件包含所有学习数据，可在其他设备上导入恢复</div>
+            <div class="line my-3"></div>
 
-            <div class="line mt-15 mb-3"></div>
-
+            <!--            导入数据-->
+            <SettingItem title="导出数据">
+              <div class="flex" v-if="!isIOS()">
+                <BaseButton @click="beforeImport" :loading="importLoading">{{ $t('import_data_restore') }}</BaseButton>
+                <input
+                  type="file"
+                  id="import"
+                  class="w-0 h-0 opacity-0"
+                  accept="application/json,.zip,application/zip"
+                  @change="importData"
+                />
+              </div>
+              <div class="inline-block relative" v-else>
+                <BaseButton :loading="importLoading">{{ $t('import_data_restore') }}</BaseButton>
+                <input
+                  type="file"
+                  id="import"
+                  class="absolute left-0 top-0 w-full h-full opacity-0"
+                  accept="application/json,.zip,application/zip"
+                  @change="importData"
+                />
+              </div>
+            </SettingItem>
             <div>
               请注意，导入数据将<b class="text-red"> 完全覆盖 </b
               >当前所有数据，请谨慎操作。执行导入操作时，会先自动备份当前数据到您的电脑中，供您随时恢复
             </div>
-            <div class="flex gap-space mt-3" v-if="!isIOS()">
-              <BaseButton size="large" @click="beforeImport" :loading="importLoading">{{
-                $t('import_data_restore')
-              }}</BaseButton>
-              <input
-                type="file"
-                id="import"
-                class="w-0 h-0 opacity-0"
-                accept="application/json,.zip,application/zip"
-                @change="importData"
-              />
-            </div>
-            <div class="inline-block mt-3 relative" v-else>
-              <BaseButton size="large" :loading="importLoading">{{ $t('import_data_restore') }}</BaseButton>
-              <input
-                type="file"
-                id="import"
-                class="absolute left-0 top-0 w-full h-full opacity-0"
-                accept="application/json,.zip,application/zip"
-                @change="importData"
-              />
-            </div>
 
+            <!--            新网站同步-->
             <template v-if="isNewHost">
               <div class="line my-3"></div>
+              <SettingItem title="迁移 2study.top 网站数据">
+                <BaseButton @click="showTransfer = true">迁移</BaseButton>
+              </SettingItem>
               <div>
                 请注意，如果本地已有使用记录，请先备份当前数据，迁移数据后将<b class="text-red"> 完全覆盖 </b
                 >当前所有数据，请谨慎操作。
               </div>
-              <div class="flex gap-space mt-3">
-                <BaseButton @click="showTransfer = true">迁移 2study.top 网站数据</BaseButton>
-              </div>
             </template>
 
-            <div class="line mt-15 mb-3"></div>
+            <div class="line my-3"></div>
             <div class="mt-3">
               <SettingItem title="Supbase 设置" desc="网站不会上传您的 url 和 key，只保存在浏览器本地(Local storage)">
               </SettingItem>
@@ -582,13 +559,31 @@ function removeSbConfig() {
                 <FormItem label="Key" prop="key">
                   <BaseInput v-model="sbForm.key" />
                 </FormItem>
+                <FormItem label="创建表语句" >
+                  <span>
+                    CREATE TABLE IF NOT EXISTS typewords_data (
+                                       id SERIAL PRIMARY KEY,
+                                       data JSONB,
+                                       type TEXT UNIQUE NOT NULL,
+                                       updated_at TIMESTAMPTZ DEFAULT now()
+                );
+                INSERT INTO typewords_data (type, data) VALUES
+                  ('word', '{}'),
+                  ('setting', '{}'),
+                  ('cache', '{}')
+                ON CONFLICT (type) DO NOTHING;
+                  </span>
+                </FormItem>
               </Form>
-              <BaseButton @click="removeSbConfig">删除配置</BaseButton>
-              <BaseButton @click="saveSbConfig">保存配置</BaseButton>
+              <div class="flex justify-end">
+                <BaseButton @click="removeSbConfig">删除配置</BaseButton>
+                <BaseButton @click="saveSbConfig">保存配置</BaseButton>
+              </div>
             </div>
 
-            <div class="line mt-15 mb-3"></div>
-            <div class="flex gap-space mt-3">
+            <div class="line my-3"></div>
+            <SettingItem title="其他"> </SettingItem>
+            <div class="flex gap-space">
               <PopConfirm title="该操作将会清除所有数据，确认继续？" @confirm="clearAllData">
                 <BaseButton>清除所有数据</BaseButton>
               </PopConfirm>

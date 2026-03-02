@@ -4,6 +4,7 @@ import { Rating } from 'ts-fsrs'
 
 export const GITHUB = 'https://github.com/zyronon/TypeWords'
 export const Host = 'typewords.cc'
+export const Old_Host = '2study.top'
 export const EMAIL = 'zyronon@163.com'
 export const Origin = `https://${Host}`
 export const APP_NAME = 'Type Words'

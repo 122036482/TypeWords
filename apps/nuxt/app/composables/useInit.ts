@@ -8,6 +8,7 @@ import { AppEnv, DictId } from '~/config/env.ts'
 import { shakeCommonDict } from '@/utils/index.ts'
 import { APP_VERSION, LOCAL_FILE_KEY, SAVE_DICT_KEY, SAVE_SETTING_KEY } from '@/config/env.ts'
 import { Supabase } from '~/utils/supabase.ts'
+import type { Word } from '~/types/types.ts'
 
 let unsub = null
 let unsub2 = null
@@ -17,13 +18,12 @@ async function getServerData() {
   const settingStore = useSettingStore()
 
   if (Supabase.check()) {
-    const { data } = await Supabase.getInstance()?.from('words').select()
+    const { data } = await Supabase.getInstance()?.from('typewords_data').select()
     if (data?.length) {
-      store.setState(data[0].data)
-    }
-    const { data: settingData } = await Supabase.getInstance()?.from('setting').select()
-    if (settingData?.length) {
-      settingStore.setState(settingData[0].data)
+      data.map(v => {
+        if (v.type === 'setting') settingStore.setState(v.data)
+        if (v.type === 'word') store.setState(v.data)
+      })
     }
   }
 }
@@ -33,23 +33,27 @@ export function useInit() {
   const settingStore = useSettingStore()
   const runtimeStore = useRuntimeStore()
   const userStore = useUserStore()
+  let isInitializing = true // 标记是否正在初始化
+
+  const onvisibilitychange = async () => {
+    //如果标签页失活了就不保存数据了
+    if (document.hidden) {
+      isInitializing = true
+    } else {
+      //当激活时，要先获取数据，以保证本地是最新的，以免本地老数据上传到后端覆盖新数据
+      isInitializing = true
+      await getServerData()
+      isInitializing = false
+    }
+  }
+
+  onUnmounted(() => {
+    document.removeEventListener('visibilitychange', onvisibilitychange)
+  })
 
   //init 有可能重复执行，因为从老网站导了数据之后需要 init
   async function init() {
     let lastAudioFileIdList = []
-    let isInitializing = true // 标记是否正在初始化
-
-    const onvisibilitychange = async () => {
-      //如果标签页失活了就不保存数据了
-      if (document.hidden) {
-        isInitializing = true
-      } else {
-        //当激活时，要先获取数据，以保证本地是最新的，以免本地老数据上传到后端覆盖新数据
-        isInitializing = true
-        await getServerData()
-        isInitializing = false
-      }
-    }
 
     document.removeEventListener('visibilitychange', onvisibilitychange)
     document.addEventListener('visibilitychange', onvisibilitychange)
@@ -62,7 +66,8 @@ export function useInit() {
       // console.log('store.$subscribe', mutation, n)
       let data = shakeCommonDict(n)
       set(SAVE_DICT_KEY.key, JSON.stringify({ val: data, version: SAVE_DICT_KEY.version }))
-      Supabase.getInstance().from('words').upsert({ id: '1', data }).then()
+      const updated_at = new Date().toISOString() // 转换为 ISO 8601 格式
+      Supabase.getInstance().from('typewords_data').upsert({ id: '1', data, type: 'word', updated_at }).then()
 
       //筛选自定义和收藏
       let bookList = data.article.bookList.filter(v => v.custom || [DictId.articleCollect].includes(v.id))
@@ -98,7 +103,8 @@ export function useInit() {
       // console.log('settingStore.$subscribe', mutation, state,isInitializing)
 
       set(SAVE_SETTING_KEY.key, JSON.stringify({ val: state, version: SAVE_SETTING_KEY.version }))
-      Supabase.getInstance().from('setting').upsert({ id: '1', data: state }).then()
+      const updated_at = new Date().toISOString() // 转换为 ISO 8601 格式
+      Supabase.getInstance().from('typewords_data').upsert({ id: '2', data: state, type: 'setting', updated_at }).then()
       if (AppEnv.CAN_REQUEST) {
         syncSetting(null, settingStore.$state)
       }

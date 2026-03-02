@@ -448,19 +448,19 @@ function next(isTyping: boolean = true) {
             nextStage(shuffle(taskWords.new), '开始默写新词')
           } else if (statStore.stage === WordPracticeStage.DictationNewWord) {
             console.log('新词学习完成')
-            let easyCount = 0
-            taskWords.new.map((w, _, arr) => {
-              //如果没有打错过/或者主动跳过的单词，设为 Easy，但不超过总新词数的 20%
-              if (
-                (!allWrongWords.has(w.word) || checkWordIsNeedNext(word)) &&
-                easyCount < Math.floor(arr.length * 0.2)
-              ) {
-                easyCount++
-                setWordCard(Rating.Easy, w.word)
-              } else {
-                //其他词，则根据错误次数生成评级
-                setWordCard(getGradeByWrongTimes(data.wrongTimesMap[w.word]), w.word, data.wrongTimesMap[w.word])
-              }
+            setTimeout(() => {
+              let easyCount = 0
+              let maxCount = Math.floor(taskWords.new.length * 0.2)
+              taskWords.new.map((w, _, arr) => {
+                //如果没有打错过/或者主动跳过的单词，设为 Easy，但不超过总新词数的 20%
+                if ((!allWrongWords.has(w.word) || checkWordIsNeedNext(word)) && easyCount < maxCount) {
+                  easyCount++
+                  setWordCard(Rating.Easy, w.word)
+                } else {
+                  //其他词，则根据错误次数生成评级
+                  setWordCard(getGradeByWrongTimes(data.wrongTimesMap[w.word]), w.word, data.wrongTimesMap[w.word])
+                }
+              })
             })
             nextStage(taskWords.review, '开始自测旧词')
           } else if (statStore.stage === WordPracticeStage.IdentifyReview) {
@@ -468,9 +468,11 @@ function next(isTyping: boolean = true) {
           } else if (statStore.stage === WordPracticeStage.ListenReview) {
             nextStage(shuffle(taskWords.review), '开始默写旧词')
           } else if (statStore.stage === WordPracticeStage.DictationReview) {
-            taskWords.review.map((w) => {
-              //根据错误次数生成评级
-              setWordCard(getGradeByWrongTimes(data.wrongTimesMap[w.word]), w.word, data.wrongTimesMap[w.word])
+            setTimeout(() => {
+              taskWords.review.map(w => {
+                //根据错误次数生成评级
+                setWordCard(getGradeByWrongTimes(data.wrongTimesMap[w.word]), w.word, data.wrongTimesMap[w.word])
+              })
             })
             complete()
           }
@@ -608,16 +610,16 @@ function repeat() {
   console.log('重学一遍')
   setPracticeWordCache(null)
   let temp = cloneDeep(taskWords)
-  let ignoreList = [store.allIgnoreWords, store.knownWords][settingStore.ignoreSimpleWord ? 0 : 1]
+  let ignoreSet = [store.allIgnoreWordsSet, store.knownWordsSet][settingStore.ignoreSimpleWord ? 0 : 1]
   //随机练习单独处理
   if (settingStore.wordPracticeMode === WordPracticeMode.Shuffle) {
-    temp.review = shuffle(temp.review.filter(v => !ignoreList.includes(v.word)))
+    temp.review = shuffle(temp.review.filter(v => !ignoreSet.has(v.word)))
   } else {
     //将学习进度减回去
     store.sdict.lastLearnIndex = store.sdict.lastLearnIndex - statStore.newWordNumber
     //排除已掌握单词
-    temp.new = temp.new.filter(v => !ignoreList.includes(v.word))
-    temp.review = temp.review.filter(v => !ignoreList.includes(v.word))
+    temp.new = temp.new.filter(v => !ignoreSet.has(v.word))
+    temp.review = temp.review.filter(v => !ignoreSet.has(v.word))
   }
   emitter.emit(EventKey.resetWord)
   initData(temp)
@@ -685,7 +687,6 @@ async function continueStudy() {
   setPracticeWordCache(null)
   let temp = cloneDeep(taskWords)
   let ignoreList = [store.allIgnoreWords, store.knownWords][settingStore.ignoreSimpleWord ? 0 : 1]
-
   //随机练习单独处理
   if (settingStore.wordPracticeMode === WordPracticeMode.Shuffle) {
     temp.review = shuffle(store.sdict.words.filter(v => !ignoreList.includes(v.word))).slice(

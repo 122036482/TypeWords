@@ -14,7 +14,7 @@ import Toast from '@/components/base/toast/Toast.ts'
 import { _dateFormat, _nextTick } from '@/utils'
 import InputNumber from '@/components/base/InputNumber.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
-import PopConfirm from '@/components/PopConfirm.vue'
+import PopConfirm from '~/components/base/PopConfirm.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
