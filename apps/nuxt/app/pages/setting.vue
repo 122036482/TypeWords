@@ -240,7 +240,7 @@ function importJson(str: string, notice: boolean = true) {
   }
 }
 
-let timer = -1
+let timer = -1 as any
 async function beforeImport() {
   if (!IS_DEV) {
     importLoading = true
@@ -338,11 +338,78 @@ let sbFormRules = {
 }
 
 function saveSbConfig() {
-  sbFormRef?.validate(valid => {
+  sbFormRef?.validate(async valid => {
     if (valid) {
       localStorage.setItem(SUPABASE_URL, sbForm?.url)
       localStorage.setItem(SUPABASE_KEY, sbForm?.key)
-      Toast.success('保存成功')
+
+      // 重新初始化 Supabase 实例
+      Supabase.instance = null
+      const supabase = Supabase.getInstance()
+
+      try {
+        // 检测 data 表是否存在
+        const { error: checkError } = await supabase.from('data').select('id').limit(1)
+
+        if (checkError) {
+          // 表不存在，需要创建
+          Toast.info('正在创建数据表...')
+
+          // 通过 REST API 执行 SQL 创建表
+          const response = await fetch(`${sbForm?.url}/rest/v1/rpc/sql`, {
+            method: 'POST',
+            headers: {
+              apikey: sbForm?.key,
+              Authorization: `Bearer ${sbForm?.key}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              query: `
+                CREATE TABLE IF NOT EXISTS data (
+                  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                  data JSONB,
+                  type TEXT UNIQUE NOT NULL,
+                  updated_time TIMESTAMPTZ DEFAULT now()
+                );
+                
+                INSERT INTO data (type, data) VALUES 
+                  ('word', '{}'),
+                  ('setting', '{}'),
+                  ('cache', '{}')
+                ON CONFLICT (type) DO NOTHING;
+              `,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error('创建表失败，请确保 Supabase Key 有足够的权限')
+          }
+
+          Toast.success('数据表创建成功')
+        } else {
+          // 表已存在，检测是否需要插入默认数据
+          const { data: existingData } = await supabase.from('data').select('type')
+          const existingTypes = existingData?.map(d => d.type) || []
+
+          const defaultData = [
+            { type: 'word', data: {} },
+            { type: 'setting', data: {} },
+            { type: 'cache', data: {} },
+          ]
+
+          for (const item of defaultData) {
+            if (!existingTypes.includes(item.type)) {
+              await supabase.from('data').insert(item)
+            }
+          }
+        }
+
+        Toast.success('保存成功')
+      } catch (error) {
+        console.error('初始化 Supabase 表失败:', error)
+        Toast.error('保存成功，但初始化数据表失败: ' + error.message)
+      }
+
       setTimeout(() => {
         location.href = '/words'
       }, 1000)
