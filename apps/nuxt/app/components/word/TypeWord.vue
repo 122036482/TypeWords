@@ -9,7 +9,7 @@ import SentenceHightLightWord from '~/components/word/SentenceHightLightWord.vue
 import { usePracticeStore } from '~/stores/practice'
 import { getDefaultWord } from '~/types/func'
 import { _nextTick, last } from '~/utils'
-import BaseButton from '~/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import Space from '~/components/article/Space.vue'
 import Toast from '~/components/base/toast/Toast'
 import Tooltip from '~/components/base/Tooltip.vue'

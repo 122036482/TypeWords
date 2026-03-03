@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import BaseTable from "~/components/BaseTable.vue";
+import BaseTable from "~/components/base/BaseTable.vue";
 import WordItem from "~/components/word/WordItem.vue";
 import { defineAsyncComponent } from "vue";
 import type { TaskWords } from "~/types/types.ts";

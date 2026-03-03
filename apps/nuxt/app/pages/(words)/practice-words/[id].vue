@@ -21,7 +21,7 @@ import {
 import { useRoute, useRouter } from 'vue-router'
 import Footer from '~/components/word/Footer.vue'
 import Panel from '@/components/Panel.vue'
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import Tooltip from '@/components/base/Tooltip.vue'
 import WordList from '@/components/list/WordList.vue'
 import TypeWord from '~/components/word/TypeWord.vue'
@@ -317,8 +317,8 @@ function watchPracticeType(n: WordPracticeType) {
   }
 }
 
-watch(isIniting, ready => {
-  if (!ready) {
+watch(isIniting, n => {
+  if (!n) {
     watch(() => statStore.stage, watchStage)
     watch(() => settingStore.wordPracticeType, watchPracticeType)
   }

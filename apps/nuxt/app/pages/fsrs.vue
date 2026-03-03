@@ -1,9 +1,11 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { useBaseStore } from '@/stores/base'
 import dayjs from 'dayjs'
 import { State } from 'ts-fsrs'
 import isToday from 'dayjs/plugin/isToday' // ES 2015
+import utc from 'dayjs/plugin/utc' // ES 2015
 dayjs.extend(isToday)
+dayjs.extend(utc)
 
 const baseStore = useBaseStore()
 let type = $ref('today')
@@ -12,7 +14,7 @@ let type = $ref('today')
 const fsrsList = computed(() => {
   return Object.entries(baseStore.fsrsData)
     .filter(([word, card]) => {
-      return type === 'today' ? dayjs(card.due).isToday() : true
+      return type === 'today' ? dayjs.utc(card.last_review).local().isToday() : true
     })
     .map(([word, card]: [string, any]) => ({
       word,

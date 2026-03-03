@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { _nextTick, groupBy, isMobile, loadJsLib, resourceWrap, useNav } from "@/utils";
-import BasePage from "@/components/BasePage.vue";
+import BasePage from "~/components/base/BasePage.vue";
 import type { DictResource } from "@/types/types.ts";
 import { useRuntimeStore } from "@/stores/runtime.ts";
-import BaseIcon from "@/components/BaseIcon.vue";
+import BaseIcon from "~/components/base/BaseIcon.vue";
 import Empty from "@/components/Empty.vue";
-import BaseButton from "@/components/BaseButton.vue";
+import BaseButton from "~/components/base/BaseButton.vue";
 import DictList from "@/components/list/DictList.vue";
-import BackIcon from "@/components/BackIcon.vue";
+import BackIcon from "~/components/icon/BackIcon.vue";
 import DictGroup from "@/components/list/DictGroup.vue";
 import { useBaseStore } from "@/stores/base.ts";
 import { useRouter } from "vue-router";

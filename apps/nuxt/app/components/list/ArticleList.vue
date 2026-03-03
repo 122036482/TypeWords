@@ -3,7 +3,7 @@ import type { Article } from '@/types/types.ts'
 import BaseList from '@/components/list/BaseList.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import { useArticleOptions } from '@/hooks/dict.ts'
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 
 interface IProps {
   list: Article[]

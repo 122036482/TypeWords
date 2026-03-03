@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import Logo from '@/components/Logo.vue'
 import MigrateDialog from '@/components/MigrateDialog.vue'
 import { Origin } from '@/config/env'

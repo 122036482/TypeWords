@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Article } from '@/types/types.ts'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { cloneDeep, loadJsLib } from '@/utils'
 
 import List from '@/components/list/List.vue'
@@ -11,7 +11,7 @@ import { nanoid } from 'nanoid'
 import EditArticle from '@/components/article/EditArticle.vue'
 import Toast from '@/components/base/toast/Toast.ts'
 import { getDefaultArticle } from '@/types/func.ts'
-import BackIcon from '@/components/BackIcon.vue'
+import BackIcon from '~/components/icon/BackIcon.vue'
 import MiniDialog from '@/components/dialog/MiniDialog.vue'
 import { onMounted } from 'vue'
 import { LIB_JS_URL } from '@/config/env.ts'

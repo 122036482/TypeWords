@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import BaseInput from '@/components/base/BaseInput.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { APP_NAME } from '@/config/env.ts'
 import { useUserStore } from '@/stores/user.ts'
 import { loginApi, LoginParams, registerApi, resetPasswordApi } from '@/apis/user.ts'

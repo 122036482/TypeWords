@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { _getAccomplishDays } from '~/utils'
-import BaseButton from '~/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import Slider from '~/components/base/Slider.vue'
 import { defineAsyncComponent, watch } from 'vue'
 import { useSettingStore } from '~/stores/setting'

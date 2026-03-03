@@ -1,8 +1,8 @@
 <script setup lang="ts">
 
-import BaseIcon from "@/components/BaseIcon.vue";
+import BaseIcon from "~/components/base/BaseIcon.vue";
 import { useAttrs } from "vue";
-import { useNav } from "@/utils";
+import { useNav } from "~/utils";
 
 const attrs = useAttrs()
 const router = useNav()

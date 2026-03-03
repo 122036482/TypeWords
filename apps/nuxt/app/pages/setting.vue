@@ -3,7 +3,7 @@ import { nextTick, ref, watch } from 'vue'
 import { getDefaultSettingState, useSettingStore } from '@/stores/setting'
 import { getShortcutKey, useEventListener } from '@/hooks/event'
 import { checkAndUpgradeSaveDict, checkAndUpgradeSaveSetting, cloneDeep, loadJsLib, sleep } from '@/utils'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { getDefaultBaseState, useBaseStore } from '@/stores/base'
 import {
   APP_NAME,
@@ -15,7 +15,7 @@ import {
   Old_Host,
   Origin,
 } from '@/config/env'
-import BasePage from '@/components/BasePage.vue'
+import BasePage from '~/components/base/BasePage.vue'
 import Toast from '@/components/base/toast/Toast'
 import { set } from 'idb-keyval'
 import { useRuntimeStore } from '@/stores/runtime'

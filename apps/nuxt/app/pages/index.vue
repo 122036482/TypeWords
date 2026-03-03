@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { APP_NAME, GITHUB } from '~/config/env.ts'
-import BaseIcon from '~/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import { getSystemTheme, listenToSystemThemeChange, setTheme, swapTheme } from '~/hooks/theme.ts'
 
 definePageMeta({

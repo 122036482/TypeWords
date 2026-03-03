@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends Article">
 
-import BaseIcon from "@/components/BaseIcon.vue";
+import BaseIcon from "~/components/base/BaseIcon.vue";
 import { cloneDeep, throttle } from "@/utils";
 import type { Article } from "@/types/types.ts";
 import DeleteIcon from "@/components/icon/DeleteIcon.vue";

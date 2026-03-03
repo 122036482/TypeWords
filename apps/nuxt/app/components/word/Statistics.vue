@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useBaseStore } from '~/stores/base.ts'
-import BaseButton from '~/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import type { Statistics, TaskWords } from '~/types/types.ts'
 import { emitter, EventKey, useEvents } from '~/utils/eventBus.ts'
 import { useSettingStore } from '~/stores/setting.ts'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import BaseButton from "@/components/BaseButton.vue";
+import BaseButton from "~/components/base/BaseButton.vue";
 import {sendCode} from "@/apis/user.ts";
 import {PHONE_CONFIG} from "@/config/auth.ts";
 import Toast from "@/components/base/toast/Toast.ts";

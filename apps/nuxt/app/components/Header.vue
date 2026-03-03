@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import BackIcon from "@/components/BackIcon.vue";
+import BackIcon from "~/components/icon/BackIcon.vue";
 import { useAttrs } from "vue";
 
 interface IProps {

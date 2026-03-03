@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import BasePage from '@/components/BasePage.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import BasePage from '~/components/base/BasePage.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import VolumeIcon from '@/components/icon/VolumeIcon.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBaseStore } from '@/stores/base.ts'
@@ -153,7 +153,7 @@ function buildQuestion(w: Word, list: Word[]): Question {
     correctIndex,
     selectedIndex: -1,
     submitted: false,
-  } 
+  }
 }
 
 function formatCandidateText(c: Candidate): string {

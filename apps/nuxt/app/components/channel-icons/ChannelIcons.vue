@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import { defineAsyncComponent } from 'vue'
 import ShareIcon from '@/components/channel-icons/ShareIcon.vue'
 import WeChat from '@/components/channel-icons/WeChat.vue'

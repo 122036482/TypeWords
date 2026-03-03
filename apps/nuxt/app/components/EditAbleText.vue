@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import BaseButton from "@/components/BaseButton.vue";
+import BaseButton from "~/components/base/BaseButton.vue";
 import { useI18n } from 'vue-i18n';
 import {watchEffect} from "vue";
 import Textarea from "@/components/base/Textarea.vue";

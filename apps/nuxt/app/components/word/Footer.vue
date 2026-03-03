@@ -2,7 +2,7 @@
 import { usePracticeStore } from '~/stores/practice'
 import { useSettingStore } from '~/stores/setting'
 import type { PracticeData } from '~/types/types'
-import BaseIcon from '~/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import Tooltip from '~/components/base/Tooltip.vue'
 import SettingDialog from '~/components/setting/SettingDialog.vue'
 import VolumeSettingMiniDialog from '~/components/word/VolumeSettingMiniDialog.vue'

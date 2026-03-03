@@ -4,7 +4,7 @@ import Tooltip from '@/components/base/Tooltip.vue'
 import { useEventListener } from '@/hooks/event'
 import { useI18n } from 'vue-i18n'
 
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { useRuntimeStore } from '@/stores/runtime'
 
 export interface ModalProps {

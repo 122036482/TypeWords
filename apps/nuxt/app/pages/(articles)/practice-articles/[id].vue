@@ -2,7 +2,7 @@
 import { addStat, setUserDictProp } from '@/apis'
 import Toast from '@/components/base/toast/Toast.ts'
 import Tooltip from '@/components/base/Tooltip.vue'
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import ConflictNotice from '~/components/dialog/ConflictNotice.vue'
 import ArticleList from '@/components/list/ArticleList.vue'
 import Panel from '@/components/Panel.vue'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import CommonSetting from '@/components/setting/CommonSetting.vue'
 import WordSetting from '@/components/setting/WordSetting.vue'
 import ArticleSetting from '@/components/setting/ArticleSetting.vue'

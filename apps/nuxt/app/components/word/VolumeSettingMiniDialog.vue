@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseIcon from '~/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import Switch from '~/components/base/Switch.vue'
 import Select from '~/components/base/select/Select.vue'
 import Option from '~/components/base/select/Option.vue'

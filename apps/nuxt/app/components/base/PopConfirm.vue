@@ -1,6 +1,6 @@
 <script lang="jsx">
 import {Teleport, Transition} from 'vue'
-import BaseButton from "~/components/BaseButton.vue";
+import BaseButton from "~/components/base/BaseButton.vue";
 
 export default {
   name: "PopConfirm",

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import BasePage from '@/components/BasePage.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import BasePage from '~/components/base/BasePage.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.ts'
 import type { User } from '@/apis/user.ts'

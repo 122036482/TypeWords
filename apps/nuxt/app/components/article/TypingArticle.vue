@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Toast from '~/components/base/toast/Toast'
-import BaseButton from '~/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { useWordOptions } from '~/hooks/dict'
 import { usePlayBeep, usePlayKeyboardAudio, usePlayWordAudio } from '~/hooks/sound'
 import QuestionForm from '~/components/article/QuestionForm.vue'

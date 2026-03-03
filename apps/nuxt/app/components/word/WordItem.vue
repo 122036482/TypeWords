@@ -3,7 +3,7 @@ import type { Word } from '~/types/types.ts'
 import VolumeIcon from '~/components/icon/VolumeIcon.vue'
 import { usePlayWordAudio } from '~/hooks/sound.ts'
 import Tooltip from '~/components/base/Tooltip.vue'
-import BaseIcon from '~/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useWordOptions } from '~/hooks/dict.ts'
 import SentenceHightLightWord from '~/components/word/SentenceHightLightWord.vue'
 

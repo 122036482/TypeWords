@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useBaseStore } from '@/stores/base.ts'
 import { useRouter } from 'vue-router'
-import BaseIcon from '@/components/BaseIcon.vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import {
   _getAccomplishDate,
   _getDictDataByUrl,
@@ -12,7 +12,7 @@ import {
   shuffle,
   useNav,
 } from '@/utils'
-import BasePage from '@/components/BasePage.vue'
+import BasePage from '~/components/base/BasePage.vue'
 import type { DictResource } from '@/types/types.ts'
 import { watch } from 'vue'
 import { getCurrentStudyWord } from '@/hooks/dict.ts'
@@ -21,7 +21,7 @@ import Book from '@/components/Book.vue'
 import PopConfirm from '~/components/base/PopConfirm.vue'
 import Progress from '@/components/base/Progress.vue'
 import Toast from '@/components/base/toast/Toast.ts'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import { getDefaultDict } from '@/types/func.ts'
 import DeleteIcon from '@/components/icon/DeleteIcon.vue'
 import PracticeSettingDialog from '~/components/word/PracticeSettingDialog.vue'
