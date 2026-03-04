@@ -662,21 +662,9 @@ function toggleWordSimpleWrapper() {
   }
 }
 
-function toggleTranslate() {
-  settingStore.translate = !settingStore.translate
-}
-
-function toggleDictation() {
-  settingStore.dictation = !settingStore.dictation
-}
-
 function toggleConciseMode() {
   settingStore.showToolbar = !settingStore.showToolbar
   settingStore.showPanel = settingStore.showToolbar
-}
-
-function togglePanel() {
-  settingStore.showPanel = !settingStore.showPanel
 }
 
 async function continueStudy() {
@@ -756,11 +744,11 @@ useEvents([
 
   [ShortcutKey.RepeatChapter, repeat],
   [ShortcutKey.NextChapter, continueStudy],
-  [ShortcutKey.ToggleShowTranslate, toggleTranslate],
-  [ShortcutKey.ToggleDictation, toggleDictation],
+  [ShortcutKey.ToggleShowTranslate, () => (settingStore.translate = !settingStore.translate)],
+  [ShortcutKey.ToggleDictation, () => (settingStore.dictation = !settingStore.dictation)],
   [ShortcutKey.ToggleTheme, toggleTheme],
   [ShortcutKey.ToggleConciseMode, toggleConciseMode],
-  [ShortcutKey.TogglePanel, togglePanel],
+  [ShortcutKey.TogglePanel, () => (settingStore.showPanel = !settingStore.showPanel)],
   [ShortcutKey.RandomWrite, randomWrite],
 ])
 </script>

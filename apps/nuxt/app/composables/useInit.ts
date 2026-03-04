@@ -60,55 +60,62 @@ export function useInit() {
 
     unsub?.()
     //用 $subscribe 替代 watch
-    unsub = store.$subscribe((mutation, n) => {
-      // 如果正在初始化，不保存数据，避免覆盖
-      if (isInitializing) return
-      // console.log('store.$subscribe', mutation, n)
-      let data = shakeCommonDict(n)
-      set(SAVE_DICT_KEY.key, JSON.stringify({ val: data, version: SAVE_DICT_KEY.version }))
-      const updated_at = new Date().toISOString() // 转换为 ISO 8601 格式
-      Supabase.getInstance().from('typewords_data').upsert({ id: '1', data, type: 'word', updated_at }).then()
+    unsub = store.$subscribe(
+      throttle((mutation, n) => {
+        // 如果正在初始化，不保存数据，避免覆盖
+        if (isInitializing) return
+        // console.log('store.$subscribe', mutation, n)
+        let data = shakeCommonDict(n)
+        set(SAVE_DICT_KEY.key, JSON.stringify({ val: data, version: SAVE_DICT_KEY.version }))
+        const updated_at = new Date().toISOString() // 转换为 ISO 8601 格式
+        Supabase.getInstance().from('typewords_data').upsert({ id: '1', data, type: 'word', updated_at }).then()
 
-      //筛选自定义和收藏
-      let bookList = data.article.bookList.filter(v => v.custom || [DictId.articleCollect].includes(v.id))
-      let audioFileIdList = []
-      bookList.forEach(v => {
-        //筛选 audioFileId 字体有值的
-        v.articles
-          .filter(s => !s.audioSrc && s.audioFileId)
-          .forEach(a => {
-            //所有 id 存起来，下次直接判断字符串是否相等，因为这个watch会频繁调用
-            audioFileIdList.push(a.audioFileId)
-          })
-      })
-      if (audioFileIdList.toString() !== lastAudioFileIdList.toString()) {
-        let result = []
-        //删除未使用到的文件
-        get(LOCAL_FILE_KEY).then((fileList: Array<{ id: string; file: Blob }>) => {
-          if (fileList && fileList.length > 0) {
-            audioFileIdList.forEach(a => {
-              let item = fileList.find(b => b.id === a)
-              item && result.push(item)
+        //筛选自定义和收藏
+        let bookList = data.article.bookList.filter(v => v.custom || [DictId.articleCollect].includes(v.id))
+        let audioFileIdList = []
+        bookList.forEach(v => {
+          //筛选 audioFileId 字体有值的
+          v.articles
+            .filter(s => !s.audioSrc && s.audioFileId)
+            .forEach(a => {
+              //所有 id 存起来，下次直接判断字符串是否相等，因为这个watch会频繁调用
+              audioFileIdList.push(a.audioFileId)
             })
-            set(LOCAL_FILE_KEY, result)
-            lastAudioFileIdList = audioFileIdList
-          }
         })
-      }
-    })
+        if (audioFileIdList.toString() !== lastAudioFileIdList.toString()) {
+          let result = []
+          //删除未使用到的文件
+          get(LOCAL_FILE_KEY).then((fileList: Array<{ id: string; file: Blob }>) => {
+            if (fileList && fileList.length > 0) {
+              audioFileIdList.forEach(a => {
+                let item = fileList.find(b => b.id === a)
+                item && result.push(item)
+              })
+              set(LOCAL_FILE_KEY, result)
+              lastAudioFileIdList = audioFileIdList
+            }
+          })
+        }
+      }, 300)
+    )
 
     unsub2?.()
-    unsub2 = settingStore.$subscribe((mutation, state) => {
-      if (isInitializing) return
-      console.log('settingStore.$subscribe', mutation, state,isInitializing)
+    unsub2 = settingStore.$subscribe(
+      throttle((mutation, state) => {
+        if (isInitializing) return
+        console.log('settingStore.$subscribe', mutation, state, isInitializing)
 
-      set(SAVE_SETTING_KEY.key, JSON.stringify({ val: state, version: SAVE_SETTING_KEY.version }))
-      const updated_at = new Date().toISOString() // 转换为 ISO 8601 格式
-      Supabase.getInstance().from('typewords_data').upsert({ id: '2', data: state, type: 'setting', updated_at }).then()
-      if (AppEnv.CAN_REQUEST) {
-        syncSetting(null, settingStore.$state)
-      }
-    })
+        set(SAVE_SETTING_KEY.key, JSON.stringify({ val: state, version: SAVE_SETTING_KEY.version }))
+        const updated_at = new Date().toISOString() // 转换为 ISO 8601 格式
+        Supabase.getInstance()
+          .from('typewords_data')
+          .upsert({ id: '2', data: state, type: 'setting', updated_at })
+          .then()
+        if (AppEnv.CAN_REQUEST) {
+          syncSetting(null, settingStore.$state)
+        }
+      }, 300)
+    )
 
     await userStore.init()
     await store.init()

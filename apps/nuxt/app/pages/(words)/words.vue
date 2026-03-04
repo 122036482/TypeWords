@@ -49,6 +49,7 @@ import { WordPracticeMode } from '@/types/enum.ts'
 
 const store = useBaseStore()
 const settingStore = useSettingStore()
+const practiceStore = usePracticeStore()
 const router = useRouter()
 const { nav } = useNav()
 const runtimeStore = useRuntimeStore()
@@ -114,9 +115,8 @@ async function init() {
     }
   }
   if (!currentStudy.new.length && store.sdict.words.length) {
-    let d = getPracticeWordCache()
-    if (d) {
-      currentStudy = d.taskWords
+    if (practiceStore.word.task) {
+      currentStudy = practiceStore.word.task
       isSaveData = true
       if (!currentStudy.new.length && !currentStudy.review.length) {
         isSaveData = false
@@ -363,9 +363,7 @@ onMounted(() => {
               </BaseButton>
             </PopConfirm>
 
-            <BaseButton type="info" size="small" @click="router.push('/fsrs')">
-              学习记录
-            </BaseButton>
+            <BaseButton type="info" size="small" @click="router.push('/fsrs')"> 学习记录 </BaseButton>
           </div>
         </template>
 
