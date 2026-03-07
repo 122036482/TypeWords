@@ -365,7 +365,7 @@ onMounted(() => {
               </BaseButton>
             </PopConfirm>
 
-            <BaseButton type="info" size="small" @click="router.push('/fsrs')"> 学习记录 </BaseButton>
+            <BaseButton v-if="settingStore.enableFSRS" type="info" size="small" @click="router.push('/fsrs')"> 学习记录 </BaseButton>
           </div>
         </template>
 

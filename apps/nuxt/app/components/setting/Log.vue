@@ -2,7 +2,7 @@
 let logList = [
   {
     date: '2026/03/06',
-    content: '新增 Supbase 同步数据',
+    content: '新增 Supabase  同步数据',
   },
   {
     date: '2026/02/27',

@@ -8,7 +8,7 @@ import type { Dict, PracticeData, TaskWords, Word } from '@/types/types.ts'
 import { useDisableEventListener, useOnKeyboardEventListener, useStartKeyboardEventListener } from '@/hooks/event.ts'
 import useTheme from '@/hooks/theme.ts'
 import { getCurrentStudyWord, useWordOptions } from '@/hooks/dict.ts'
-import { _getDictDataByUrl, _nextTick, cloneDeep, isMobile, loadJsLib, resourceWrap, shuffle } from '@/utils'
+import { _getDictDataByUrl, _nextTick, cloneDeep, isMobile, loadJsLib, resourceWrap, shuffle, throttle } from '@/utils'
 import { useRoute, useRouter } from 'vue-router'
 import Footer from '~/components/word/Footer.vue'
 import Panel from '@/components/Panel.vue'
@@ -354,6 +354,9 @@ function nextStage(originList: Word[], log: string = '', toast: boolean = false)
     data.index = 0
   } else {
     console.log(log + ':无单词略过')
+    // 清空列表并重置索引，避免 next(false) 再次进入「最后一个词」分支导致死循环
+    data.words = []
+    data.index = 0
     next(false)
   }
 }
@@ -411,21 +414,21 @@ function next(isTyping: boolean = true) {
       data.index++
     }
   } else {
-    if (data.index === data.words.length - 1) {
-      //如果开发模式并且不是手动敲的，不轮询
-/*       if (
-        (statStore.stage === WordPracticeStage.FollowWriteNewWord || data.isTypingWrongWord) &&
-        !(IS_DEV && !isTyping)
-      ) {
-        if (settingStore.wordPracticeType !== WordPracticeType.Spell) {
-          //回到最后一组的开始位置
-          data.index = Math.floor(data.index / groupSize) * groupSize
-          emitter.emit(EventKey.resetWord)
-          settingStore.wordPracticeType = WordPracticeType.Spell
-          if (checkWordIsNeedNext(word)) next(false)
-          return
+    // 无词或已是最后一个词：走阶段推进/完成逻辑（nextStage 空列表时会把 words 清空，需一并处理）
+    if (data.words.length === 0 || data.index === data.words.length - 1) {
+      // 有词时才做「回到最后一组」等依赖当前词的处理；无词时直接走错词/阶段逻辑
+      if (data.words.length) {
+        if (statStore.stage === WordPracticeStage.FollowWriteNewWord || data.isTypingWrongWord) {
+          if (settingStore.wordPracticeType !== WordPracticeType.Spell) {
+            //回到最后一组的开始位置
+            data.index = Math.floor(data.index / groupSize) * groupSize
+            emitter.emit(EventKey.resetWord)
+            settingStore.wordPracticeType = WordPracticeType.Spell
+            if (checkWordIsNeedNext(word)) next(false)
+            return
+          }
         }
-      } */
+      }
       data.wrongWords = data.wrongWords.filter(v => !checkWordIsNeedNext(v))
       if (data.wrongWords.length) {
         data.isTypingWrongWord = true
@@ -505,12 +508,14 @@ function next(isTyping: boolean = true) {
     }
   }
 
-  // if (checkWordIsNeedNext(word)) next(false)
+  // 仅在有当前词列表时再检查是否需跳过当前词，避免 words 被清空后用默认 word 误触发 next
+  if (data.words.length > 0 && checkWordIsNeedNext(word)) next(false)
 }
 
 //检查单词是否跳过
 //如果单词是已掌握的/或者主动跳过的，则略过
 function checkWordIsNeedNext(word: Word) {
+  if (!word.word) return false
   let rIndex = data.excludeWords.findIndex(v => v === word.word)
   return isWordSimple(word) || rIndex > -1
 }
@@ -588,7 +593,7 @@ const savePracticeData = debounce((where?) => {
     return
   }
   if (showStatDialog) return
-  console.log('savePracticeData', where)
+  // console.log('savePracticeData', where)
   wordPersistence.save({
     taskWords,
     practiceData: data,
@@ -769,7 +774,7 @@ useEvents([
   //当默写时，执行 show 会标记为错误，并更新卡片
   [ShortcutKey.ShowWord, throttle(show, 300)],
   [ShortcutKey.Previous, prev],
-  [ShortcutKey.Next, skip],
+  [ShortcutKey.Next, throttle(skip, 300)],
   [ShortcutKey.ToggleCollect, collect],
   [ShortcutKey.ToggleSimple, toggleWordSimpleWrapper],
   [ShortcutKey.PlayWordPronunciation, play],

@@ -9,6 +9,7 @@ import {
   APP_NAME,
   APP_VERSION,
   DefaultShortcutKeyMap,
+  DictId,
   IS_DEV,
   LIB_JS_URL,
   LOCAL_FILE_KEY,
@@ -49,7 +50,7 @@ const emit = defineEmits<{
   toggleDisabledDialogEscKey: [val: boolean]
 }>()
 
-const tabIndex = $ref(0)
+const tabIndex = $ref(5)
 const settingStore = useSettingStore()
 const runtimeStore = useRuntimeStore()
 const store = useBaseStore()
@@ -57,16 +58,12 @@ const wordPersistence = usePracticeWordPersistence()
 const articlePersistence = usePracticeArticlePersistence()
 
 const config = useRuntimeConfig()
-
-// console.log('runtimeConfig ',config)
-//@ts-ignore
-// const gitLastCommitHash = ref(LATEST_COMMIT_HASH)
 const gitLastCommitHash = ref(config?.public?.latestCommitHash)
 
 let editShortcutKey = $ref('')
 
 const disabledDefaultKeyboardEvent = $computed(() => {
-  return editShortcutKey && tabIndex === 3
+  return editShortcutKey && tabIndex === 6
 })
 
 watch(
@@ -338,6 +335,7 @@ function clearAllData() {
   d1.load = true
   settingStore.setState(d1)
 }
+
 let sbFormRef = $ref<FormType>()
 let sbForm = $ref({
   url: localStorage.getItem(SUPABASE_URL) ?? '',
@@ -345,9 +343,26 @@ let sbForm = $ref({
 })
 
 let sbFormRules = {
-  url: [{ required: true, message: '请输入 Supbase Url', trigger: 'blur' }],
-  key: [{ required: true, message: '请输入  Supbase Key', trigger: 'blur' }],
+  url: [{ required: true, message: '请输入 Supabase  Url', trigger: 'blur' }],
+  key: [{ required: true, message: '请输入  Supabase  Key', trigger: 'blur' }],
 }
+
+//能否使用同步数据功能,如果有自定义的文章里面有音频，则不可以
+const canSyncToServe = $computed(() => {
+  //筛选自定义和收藏
+  let bookList = store.article.bookList.filter(v => v.custom || [DictId.articleCollect].includes(v.id))
+  let audioFileIdList = []
+  bookList.forEach(v => {
+    //筛选 audioFileId 字体有值的
+    v.articles
+      .filter(s => !s.audioSrc && s.audioFileId)
+      .forEach(a => {
+        //所有 id 存起来，下次直接判断字符串是否相等，因为这个watch会频繁调用
+        audioFileIdList.push(a.audioFileId)
+      })
+  })
+  return audioFileIdList.length > 0
+})
 
 let configLoading = $ref(false)
 function saveSbConfig() {
@@ -356,45 +371,40 @@ function saveSbConfig() {
       if (configLoading) return
       configLoading = true
       Supabase.saveConfig(sbForm?.url, sbForm?.key)
-
       // 重新初始化 Supabase 实例
       Supabase.instance = null
       const supabase = Supabase.getInstance()
-
       try {
-        // 检测 data 表是否存在
+        // 检测 typewords_data 表是否存在
         const { data: existingData, error: checkError } = await supabase.from('typewords_data').select('type')
         if (checkError) {
           Toast.error('表不存在')
         } else {
           // 表已存在，检测是否需要插入默认数据
           const existingTypes = existingData?.map(d => d.type) || []
-
           const defaultData = [
-            { type: 'word', data: {} },
+            { type: 'dict', data: {} },
             { type: 'setting', data: {} },
             { type: 'practice_word', data: {} },
             { type: 'practice_article', data: {} },
           ]
-
           for (const item of defaultData) {
             if (!existingTypes.includes(item.type)) {
-              await supabase.from('data').insert(item)
+              await supabase.from('typewords_data').insert(item)
             }
           }
+          Toast.success('保存成功')
+          transferOk()
         }
-        Toast.success('保存成功')
       } catch (error) {
-        Toast.error('保存成功，但初始化数据表失败: ' + error.message)
+        Toast.error('出现错误：' + error.message)
       } finally {
         configLoading = false
       }
-      // setTimeout(() => {
-      //   location.href = '/words'
-      // }, 1000)
     }
   })
 }
+
 function removeSbConfig() {
   sbFormRef?.validate(async valid => {
     if (valid) {
@@ -469,44 +479,6 @@ function removeSbConfig() {
           <WordSetting v-if="tabIndex === 2" />
           <ArticleSetting v-if="tabIndex === 3" />
 
-          <div class="body" v-if="tabIndex === 6">
-            <div class="row">
-              <label class="main-title">{{ $t('function') }}</label>
-              <div class="wrapper">{{ $t('shortcut_key') }}</div>
-            </div>
-            <div class="scroll">
-              <div class="row" v-for="item of Object.entries(settingStore.shortcutKeyMap)">
-                <label class="item-title">{{ getShortcutKeyName(item[0]) }}</label>
-                <div class="wrapper" @click="editShortcutKey = item[0]">
-                  <div class="set-key" v-if="editShortcutKey === item[0]">
-                    <input
-                      ref="shortcutInput"
-                      :value="item[1] ? item[1] : $t('no_shortcut_set')"
-                      readonly
-                      type="text"
-                      @blur="handleInputBlur"
-                    />
-                    <span @click.stop="editShortcutKey = ''"
-                      >{{ $t('press_key_to_set') }}，<span class="text-red!">{{
-                        $t('click_here_when_done')
-                      }}</span></span
-                    >
-                  </div>
-                  <div v-else>
-                    <div v-if="item[1]">{{ item[1] }}</div>
-                    <span v-else>{{ $t('no_shortcut_set') }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <label class="item-title"></label>
-              <div class="wrapper">
-                <BaseButton @click="resetShortcutKeyMap">{{ $t('restore_default') }}</BaseButton>
-              </div>
-            </div>
-          </div>
-
           <div v-if="tabIndex === 5">
             <!--            导出数据-->
             <SettingItem
@@ -559,10 +531,16 @@ function removeSbConfig() {
               </div>
             </template>
 
+            <!--          Supabase 设置  -->
             <div class="line my-3"></div>
             <div class="mt-3">
-              <SettingItem title="Supbase 设置" desc="网站不会上传您的 url 和 key，只保存在浏览器本地(Local storage)">
+              <SettingItem title="Supabase 设置" desc="网站不会上传您的 url 和 key，只保存在浏览器本地(Local storage)">
               </SettingItem>
+
+              <p>
+                Supabase 使用教程：
+                <a href="https://www.kdocs.cn/l/cduLx52XXXgw" target="_blank">https://www.kdocs.cn/l/cduLx52XXXgw</a>
+              </p>
 
               <Form ref="sbFormRef" :rules="sbFormRules" :model="sbForm">
                 <FormItem label="Url" prop="url">
@@ -571,18 +549,12 @@ function removeSbConfig() {
                 <FormItem label="Key" prop="key">
                   <BaseInput v-model="sbForm.key" />
                 </FormItem>
-                <FormItem label="创建表语句">
-                  <span>
-                    CREATE TABLE IF NOT EXISTS typewords_data ( id SERIAL PRIMARY KEY, data JSONB,data_version string,
-                    type TEXT UNIQUE NOT NULL, updated_at TIMESTAMPTZ DEFAULT now() ); INSERT INTO typewords_data (type,
-                    data) VALUES ('word', '{}'), ('setting', '{}'), ('practice_word', '{}') ,('practice_article', '{}')
-                    ON CONFLICT (type) DO NOTHING;
-                  </span>
-                </FormItem>
               </Form>
               <div class="flex justify-end">
                 <BaseButton @click="removeSbConfig">删除配置</BaseButton>
-                <BaseButton @click="saveSbConfig" :loading="configLoading">保存配置</BaseButton>
+                <BaseButton
+                  keyboard="检测到自定义文章里面有自定义音频，无法使用同步功能"
+                  @click="saveSbConfig" :loading="configLoading" :disabled="true">保存配置</BaseButton>
               </div>
             </div>
 
@@ -592,6 +564,44 @@ function removeSbConfig() {
               <PopConfirm title="该操作将会清除所有数据，确认继续？" @confirm="clearAllData">
                 <BaseButton>清除所有数据</BaseButton>
               </PopConfirm>
+            </div>
+          </div>
+
+          <div class="body" v-if="tabIndex === 6">
+            <div class="row">
+              <label class="main-title">{{ $t('function') }}</label>
+              <div class="wrapper">{{ $t('shortcut_key') }}</div>
+            </div>
+            <div class="scroll">
+              <div class="row" v-for="item of Object.entries(settingStore.shortcutKeyMap)">
+                <label class="item-title">{{ getShortcutKeyName(item[0]) }}</label>
+                <div class="wrapper" @click="editShortcutKey = item[0]">
+                  <div class="set-key" v-if="editShortcutKey === item[0]">
+                    <input
+                      ref="shortcutInput"
+                      :value="item[1] ? item[1] : $t('no_shortcut_set')"
+                      readonly
+                      type="text"
+                      @blur="handleInputBlur"
+                    />
+                    <span @click.stop="editShortcutKey = ''"
+                      >{{ $t('press_key_to_set') }}，<span class="text-red!">{{
+                        $t('click_here_when_done')
+                      }}</span></span
+                    >
+                  </div>
+                  <div v-else>
+                    <div v-if="item[1]">{{ item[1] }}</div>
+                    <span v-else>{{ $t('no_shortcut_set') }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <label class="item-title"></label>
+              <div class="wrapper">
+                <BaseButton @click="resetShortcutKeyMap">{{ $t('restore_default') }}</BaseButton>
+              </div>
             </div>
           </div>
 
